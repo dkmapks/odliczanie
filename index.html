@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Odliczanie do 3 maja 2025</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            color: white;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .counter {
+            margin: 20px 0;
+            font-size: 2em;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            width: 90%;
+            max-width: 600px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Odliczanie do 3 maja 2025</h1>
+    <div class="counter" id="full"></div>
+    <div class="counter" id="daysOnly"></div>
+    <div class="counter" id="hoursOnly"></div>
+    <div class="counter" id="minutesOnly"></div>
+    <div class="counter" id="secondsOnly"></div>
+
+    <script>
+        const endDate = new Date('2025-05-03T00:00:00');
+
+        function updateCountdown() {
+            const now = new Date();
+            const totalSeconds = Math.floor((endDate - now) / 1000);
+
+            if (totalSeconds <= 0) {
+                document.getElementById('full').textContent = "Czas minął!";
+                document.getElementById('daysOnly').textContent = "";
+                document.getElementById('hoursOnly').textContent = "";
+                document.getElementById('minutesOnly').textContent = "";
+                document.getElementById('secondsOnly').textContent = "";
+                return;
+            }
+
+            const days = Math.floor(totalSeconds / 86400);
+            const hours = Math.floor((totalSeconds % 86400) / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            document.getElementById('full').textContent = `${days} dni, ${hours} godzin, ${minutes} minut, ${seconds} sekund`;
+
+            document.getElementById('daysOnly').textContent = `Pozostało dni: ${days}`;
+            document.getElementById('hoursOnly').textContent = `Pozostało godzin: ${Math.floor(totalSeconds / 3600)}`;
+            document.getElementById('minutesOnly').textContent = `Pozostało minut: ${Math.floor(totalSeconds / 60)}`;
+            document.getElementById('secondsOnly').textContent = `Pozostało sekund: ${totalSeconds}`;
+        }
+
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+    </script>
+</body>
+</html>
