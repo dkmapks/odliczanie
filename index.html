@@ -1,72 +1,57 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Odliczanie do 3 maja 2025</title>
-    <link rel="manifest" href="manifest.json">
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            text-align: center;
-            padding: 40px;
-            background: linear-gradient(to right, #4facfe, #00f2fe);
-            color: white;
-        }
-        h1 {
-            margin-bottom: 20px;
-        }
-        .counter {
-            margin: 20px 0;
-            font-size: 2em;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 20px;
-            border-radius: 10px;
-            display: inline-block;
-            width: 90%;
-            max-width: 600px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Symulator Janusza</title>
+  <style>
+    body {
+      background-color: #fdf6e3;
+      text-align: center;
+      font-family: Arial, sans-serif;
+    }
+    #janusz {
+      width: 200px;
+      animation: shake 2s infinite;
+    }
+    @keyframes shake {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(3deg); }
+      75% { transform: rotate(-3deg); }
+    }
+  </style>
 </head>
 <body>
-    <h1>Odliczanie do 3 maja 2025</h1>
-    <div class="counter" id="full"></div>
-    <div class="counter" id="daysOnly"></div>
-    <div class="counter" id="hoursOnly"></div>
-    <div class="counter" id="minutesOnly"></div>
-    <div class="counter" id="secondsOnly"></div>
+  <h1>Symulator Cwela</h1>
 
-    <script>
-        const endDate = new Date('2025-05-03T00:00:00');
+  <input type="file" accept="image/*" onchange="previewImage(event)">
+  <br><br>
+  <img id="janusz" src="janusz.png" alt="Janusz w akcji">
+  <br><br>
 
-        function updateCountdown() {
-            const now = new Date();
-            const totalSeconds = Math.floor((endDate - now) / 1000);
+  <input type="text" id="ytLink" placeholder="Wklej link do filmu z YouTube" style="width: 300px;">
+  <button onclick="loadVideo()">Załaduj film</button>
+  <br><br>
+  <div id="videoContainer"></div>
 
-            if (totalSeconds <= 0) {
-                document.getElementById('full').textContent = "Czas minął!";
-                document.getElementById('daysOnly').textContent = "";
-                document.getElementById('hoursOnly').textContent = "";
-                document.getElementById('minutesOnly').textContent = "";
-                document.getElementById('secondsOnly').textContent = "";
-                return;
-            }
+  <script>
+    function previewImage(event) {
+      const reader = new FileReader();
+      reader.onload = function(){
+        document.getElementById('janusz').src = reader.result;
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    }
 
-            const days = Math.floor(totalSeconds / 86400);
-            const hours = Math.floor((totalSeconds % 86400) / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = totalSeconds % 60;
-
-            document.getElementById('full').textContent = `${days} dni, ${hours} godzin, ${minutes} minut, ${seconds} sekund`;
-
-            document.getElementById('daysOnly').textContent = `Pozostało dni: ${days}`;
-            document.getElementById('hoursOnly').textContent = `Pozostało godzin: ${Math.floor(totalSeconds / 3600)}`;
-            document.getElementById('minutesOnly').textContent = `Pozostało minut: ${Math.floor(totalSeconds / 60)}`;
-            document.getElementById('secondsOnly').textContent = `Pozostało sekund: ${totalSeconds}`;
-        }
-
-        setInterval(updateCountdown, 1000);
-        updateCountdown();
-    </script>
+    function loadVideo() {
+      const link = document.getElementById('ytLink').value;
+      const id = link.split('v=')[1];
+      if (id) {
+        document.getElementById('videoContainer').innerHTML =
+          `<iframe width="560" height="315" src="https://www.youtube.com/embed/${id}" frameborder="0" allowfullscreen></iframe>`;
+      } else {
+        alert("Nieprawidłowy link");
+      }
+    }
+  </script>
 </body>
 </html>
