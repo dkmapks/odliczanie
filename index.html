@@ -1,57 +1,247 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <title>Symulator Cwela</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DDrugs 3.0 - Gra</title>
   <style>
     body {
-      background-color: #fdf6e3;
-      text-align: center;
       font-family: Arial, sans-serif;
+      background: #121212;
+      color: #eee;
+      margin: 0;
+      padding: 20px;
     }
-    #janusz {
-      width: 200px;
-      animation: shake 2s infinite;
+    h1 {
+      text-align: center;
+      color: #0f9;
     }
-    @keyframes shake {
-      0%, 100% { transform: rotate(0deg); }
-      25% { transform: rotate(3deg); }
-      75% { transform: rotate(-3deg); }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #222;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    .status {
+      margin-bottom: 20px;
+      font-size: 1.2em;
+    }
+    .inventory {
+      margin-bottom: 20px;
+    }
+    .inventory div {
+      margin: 5px 0;
+    }
+    button {
+      background: #0f9;
+      border: none;
+      padding: 10px 15px;
+      margin: 5px 0;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      color: #121212;
+      width: 100%;
+    }
+    button:hover {
+      background: #0c7;
+    }
+    input[type=number] {
+      width: 100%;
+      padding: 8px;
+      border-radius: 4px;
+      border: none;
+      margin-bottom: 10px;
+      font-size: 1em;
+      box-sizing: border-box;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 5px;
+    }
+    .workers {
+      margin-top: 20px;
+      background: #333;
+      padding: 10px;
+      border-radius: 6px;
+    }
+    .worker {
+      border-bottom: 1px solid #555;
+      padding: 5px 0;
     }
   </style>
 </head>
 <body>
-  <h1>Symulator Cwela</h1>
+  <div class="container">
+    <h1>DDrugs 3.0</h1>
+    <div class="status">
+      <div>Gotówka: <span id="cash">0</span> zł</div>
+      <div>Dług: <span id="debt">0</span> zł</div>
+      <div>Miejsce w magazynie: <span id="storageUsed">0</span>/<span id="storageLimit">0</span></div>
+    </div>
 
-  <input type="file" accept="image/*" onchange="previewImage(event)">
-  <br><br>
-  <img id="cwel" src="10CB486C-BB2D-437C-907C-861BAC58DB3A.mp4" alt="cwel w akcji">
-  <br><br>
+    <div class="inventory">
+      <h2>Magazyn</h2>
+      <div>Kokaina: <span id="kokaina">0</span></div>
+      <div>Marihuana: <span id="marihuana">0</span></div>
+      <div>Mefedron: <span id="mefedron">0</span></div>
+      <div>Amfetamina: <span id="amfetamina">0</span></div>
+      <div>Pixy: <span id="pixy">0</span></div>
+      <div>LSD: <span id="lsd">0</span></div>
+      <div>Grzyby: <span id="grzyby">0</span></div>
+      <div>Crack: <span id="crack">0</span></div>
+    </div>
 
-  <input type="text" id="ytLink" placeholder="Wklej link do filmu z YouTube" style="width: 300px;">
-  <button onclick="loadVideo()">Załaduj film</button>
-  <br><br>
-  <div id="videoContainer"></div>
+    <div>
+      <label for="loanAmount">Kwota pożyczki (1 - 1 000 000 zł):</label>
+      <input type="number" id="loanAmount" min="1" max="1000000" value="1000" />
+      <button onclick="takeLoan()">Weź pożyczkę</button>
+      <button onclick="repayLoan()">Spłać dług</button>
+    </div>
+
+    <div style="margin-top:20px;">
+      <button onclick="saveGame()">Zapisz grę</button>
+      <button onclick="loadGame()">Wczytaj grę</button>
+      <button onclick="resetGame()">Resetuj grę</button>
+    </div>
+
+    <div class="workers">
+      <h2>Pracownicy</h2>
+      <div id="workersList"></div>
+    </div>
+  </div>
 
   <script>
-    function previewImage(event) {
-      const reader = new FileReader();
-      reader.onload = function(){
-        document.getElementById('janusz').src = reader.result;
-      };
-      reader.readAsDataURL(event.target.files[0]);
-    }
+    let state = {
+      cash: 1000,
+      debt: 0,
+      storageLimit: 1000,
+      inventory: {
+        kokaina: 0,
+        marihuana: 0,
+        mefedron: 0,
+        amfetamina: 0,
+        pixy: 0,
+        lsd: 0,
+        grzyby: 0,
+        crack: 0,
+      },
+      workers: []
+    };
 
-    function loadVideo() {
-      const link = document.getElementById('ytLink').value;
-      const id = link.split('v=')[1];
-      if (id) {
-        document.getElementById('videoContainer').innerHTML =
-          `<iframe width="560" height="315" src="https://www.youtube.com/embed/${id}" frameborder="0" allowfullscreen></iframe>`;
+    // Funkcja do aktualizacji interfejsu
+    function updateUI() {
+      document.getElementById('cash').textContent = state.cash.toFixed(2);
+      document.getElementById('debt').textContent = state.debt.toFixed(2);
+      document.getElementById('storageLimit').textContent = state.storageLimit;
+      const usedStorage = Object.values(state.inventory).reduce((a,b) => a + b, 0);
+      document.getElementById('storageUsed').textContent = usedStorage;
+
+      document.getElementById('kokaina').textContent = state.inventory.kokaina;
+      document.getElementById('marihuana').textContent = state.inventory.marihuana;
+      document.getElementById('mefedron').textContent = state.inventory.mefedron;
+      document.getElementById('amfetamina').textContent = state.inventory.amfetamina;
+      document.getElementById('pixy').textContent = state.inventory.pixy;
+      document.getElementById('lsd').textContent = state.inventory.lsd;
+      document.getElementById('grzyby').textContent = state.inventory.grzyby;
+      document.getElementById('crack').textContent = state.inventory.crack;
+
+      // Wyświetl pracowników
+      const workersDiv = document.getElementById('workersList');
+      workersDiv.innerHTML = '';
+      if(state.workers.length === 0) {
+        workersDiv.textContent = 'Brak pracowników.';
       } else {
-        alert("Nieprawidłowy link");
+        state.workers.forEach((w, i) => {
+          const div = document.createElement('div');
+          div.classList.add('worker');
+          div.textContent = `${w.name} - zajęcie: ${w.drug ? w.drug : 'brak'}, ilość: ${w.amount}, cena: ${w.price} zł`;
+          workersDiv.appendChild(div);
+        });
       }
     }
+
+    // Funkcja do wzięcia pożyczki
+    function takeLoan() {
+      const input = document.getElementById('loanAmount');
+      let amount = parseInt(input.value);
+      if(isNaN(amount) || amount < 1 || amount > 1000000) {
+        alert("Podaj poprawną kwotę pożyczki od 1 do 1 000 000 zł.");
+        return;
+      }
+      state.cash += amount;
+      state.debt += amount * 2; // dług do spłaty jest podwójny
+      alert(`Wzięto pożyczkę ${amount} zł. Musisz oddać ${amount*2} zł.`);
+      updateUI();
+    }
+
+    // Funkcja do spłaty długu
+    function repayLoan() {
+      if(state.debt === 0) {
+        alert("Nie masz długu do spłacenia.");
+        return;
+      }
+      if(state.cash >= state.debt) {
+        state.cash -= state.debt;
+        alert(`Spłacono dług w wysokości ${state.debt} zł.`);
+        state.debt = 0;
+      } else {
+        alert("Nie masz wystarczająco pieniędzy na spłatę całego długu.");
+      }
+      updateUI();
+    }
+
+    // Funkcja zapisu gry
+    function saveGame() {
+      localStorage.setItem("ddrugsState", JSON.stringify(state));
+      alert("Gra zapisana.");
+    }
+
+    // Funkcja wczytania gry
+    function loadGame() {
+      const saved = localStorage.getItem("ddrugsState");
+      if(!saved) {
+        alert("Brak zapisu.");
+        return;
+      }
+      state = JSON.parse(saved);
+      updateUI();
+      alert("Gra wczytana.");
+    }
+
+    // Reset gry
+    function resetGame() {
+      if(confirm("Czy na pewno chcesz zresetować grę?")) {
+        state = {
+          cash: 1000,
+          debt: 0,
+          storageLimit: 1000,
+          inventory: {
+            kokaina: 0,
+            marihuana: 0,
+            mefedron: 0,
+            amfetamina: 0,
+            pixy: 0,
+            lsd: 0,
+            grzyby: 0,
+            crack: 0,
+          },
+          workers: []
+        };
+        updateUI();
+      }
+    }
+
+    // Dodaj przykładowych pracowników
+    function addWorker(name) {
+      state.workers.push({ name, drug: null, amount: 0, price: 0 });
+    }
+    addWorker("Janek");
+    addWorker("Zbyszek");
+
+    updateUI();
   </script>
 </body>
 </html>
